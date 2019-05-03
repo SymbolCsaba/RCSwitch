@@ -1,20 +1,16 @@
 /*
-  Example for receiving
-
-  https://github.com/suda/RCSwitch
-
-  If you want to visualize a telegram copy the raw data and
-  paste it into http://test.sui.li/oszi/
-
-  Connect receiver to D3 pin and open serial connection @ 9600 bauds or listen
-  Spark Cloud for "tristate-received" event.
+  Example for enabling multiple receiving pins.
+  Do NOT forget to adjust RCSWITCH_MAX_RX_PINS in RCSwitch.h according to your configuration!
+  Connect your receive module to the pins and open serial monitor at 115200bps.
 */
 
-#include "RCSwitch/RCSwitch.h"
+#define PIN_315 14  // NodeMCU D5
+#define PIN_433 13  // NodeMCU D7
 
+#include "RCSwitch.h"
+
+// Do not instantiate multiple RCSwitch (can cause crash), use single instance and write multiple enableReceive() for multi receiving.
 RCSwitch mySwitch = RCSwitch();
-int ledPin = D7;
-int inputPin = D3;
 
 static char *bin2tristate(char *bin) {
   char returnValue[50];
@@ -40,8 +36,12 @@ static char *bin2tristate(char *bin) {
   return returnValue;
 }
 
-void output(unsigned long decimal, unsigned int length, unsigned int delay, unsigned int* raw, unsigned int protocol) {
-
+void output(unsigned char pin, unsigned long decimal, unsigned int length, unsigned int delay, unsigned int* raw, unsigned int protocol) {
+  Serial.println("-------------------------------------");
+  if(pin == PIN_315)
+    Serial.println("315MHz RECV");
+  else if(pin == PIN_433)
+    Serial.println("433MHz RECV");
   if (decimal == 0) {
     Serial.print("Unknown encoding.");
   } else {
@@ -62,7 +62,7 @@ void output(unsigned long decimal, unsigned int length, unsigned int delay, unsi
     Serial.print(" Protocol: ");
     Serial.println(protocol);
 
-    Spark.publish("tristate-received", String(delay) + " " + String(tristate));
+    //Spark.publish("tristate-received", String(delay) + " " + String(tristate));
   }
 
   Serial.print("Raw data: ");
@@ -75,22 +75,20 @@ void output(unsigned long decimal, unsigned int length, unsigned int delay, unsi
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
+
+  pinMode(PIN_315, INPUT);
+  pinMode(PIN_433, INPUT);
+  mySwitch.enableReceive(PIN_315);
+  mySwitch.enableReceive(PIN_433);
   Serial.println("Listening");
-
-  pinMode(inputPin, INPUT_PULLDOWN);
-  mySwitch.enableReceive(inputPin);
-
-  pinMode(ledPin, OUTPUT);
 }
 
 void loop() {
-  int inputPinState = digitalRead(inputPin);
-  digitalWrite(ledPin, inputPinState);
-
   if (mySwitch.available()) {
     int receivedPin = mySwitch.getReceivedPin();
     output(
+        receivedPin,
         mySwitch.getReceivedValue(receivedPin),
         mySwitch.getReceivedBitlength(receivedPin),
         mySwitch.getReceivedDelay(receivedPin),

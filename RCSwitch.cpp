@@ -30,7 +30,15 @@
 */
 
 #include "RCSwitch.h"
-#include "spark_wiring_usbserial.h"
+//#include "spark_wiring_usbserial.h"
+
+#if defined(ESP8266) || defined(ESP32)
+    // interrupt handler and related code must be in RAM on ESP8266,
+    // according to issue #46.
+    #define RECEIVE_ATTR ICACHE_RAM_ATTR
+#else
+    #define RECEIVE_ATTR
+#endif
 
 #if not defined( RCSwitchDisableReceiving )
 RCSwitch::InterruptData RCSwitch::receiverInterrupts[RCSWITCH_MAX_RX_PINS];
@@ -581,33 +589,50 @@ void RCSwitch::enableReceive(int interrupt) {
 	// check if interrupt is already enabled
 	for (int i = 0; i < RCSWITCH_MAX_RX_PINS; ++i) {
 		if (interrupt == this->receiverInterrupts[i].interrupt) {
-			Serial.printlnf("Interrupt already enabled on pin %d -- skipping", interrupt);
+#if RC_DEBUG
+			Serial.print("Interrupt already enabled on pin ");
+			Serial.print(interrupt);
+			Serial.println(" -- skipping");
+#endif
 			return;
 		}
 	}
-
-	Serial.printlnf("Searching for empty spot: interrupt on pin %d", interrupt);
+#if RC_DEBUG
+	Serial.print("Searching for empty spot: interrupt on pin ");
+	Serial.println(interrupt);
+#endif
 	int index = -1;
 	// find an unused element
 	// TODO: add a `isEnabled` member to the `InterruptData` struct;
 	// reset `nReceivedValue` and `nReceivedBitLength` only if previously not enabled
 	for (int i = 0; i < RCSWITCH_MAX_RX_PINS; ++i) {
-		Serial.printlnf("element: %d  |  pin: %d", i, RCSwitch::receiverInterrupts[i].interrupt);
+#if RC_DEBUG
+		Serial.print("element: ");
+		Serial.print(i);
+		Serial.print("  |  pin: ");
+		Serial.println(RCSwitch::receiverInterrupts[i].interrupt);
+#endif
 		if (this->receiverInterrupts[i].interrupt == -1) {
 			this->receiverInterrupts[i].interrupt = interrupt;
 			index = i;
 			break;
 		}
 	}
+#if RC_DEBUG
 	Serial.println("");
+#endif
 
 	attachInterrupt(interrupt, handleInterrupt, CHANGE);
 
 	noInterrupts();
-	Serial.printlnf("Attached interrupt: %d", interrupt);
-	Serial.printlnf("   interrupt index: %d", index);
-	Serial.printlnf("     fetched index: %d", getInterruptIndex(interrupt));
-	Serial.println("");
+#if RC_DEBUG
+	Serial.print("Attached interrupt: ");
+	Serial.println(interrupt);
+	Serial.print("   interrupt index: ");
+	Serial.println(index);
+	Serial.print("     fetched index: ");
+	Serial.println(getInterruptIndex(interrupt));
+#endif
 	interrupts();
 }
 
@@ -673,7 +698,9 @@ unsigned int* RCSwitch::getReceivedRawdata(int interrupt) {
  *
  */
 bool RCSwitch::receiveProtocol1(int interrupt_i, unsigned int changeCount){
+#if RC_DEBUG
 	Serial.println("Triggered: protocol 1");
+#endif
 
 	unsigned long code = 0;
 	unsigned long delay = RCSwitch::timings[interrupt_i][0] / 31;
@@ -714,13 +741,17 @@ bool RCSwitch::receiveProtocol1(int interrupt_i, unsigned int changeCount){
 		//	Serial.printf("%d ", RCSwitch::timings[interrupt_i][j]);
 		//}
 		//Serial.println("");
+#if RC_DEBUG
 		Serial.printf("code = %d\n", code);
+#endif
 		return true;
 	}
 }
 
 bool RCSwitch::receiveProtocol2(int interrupt_i, unsigned int changeCount){
+#if RC_DEBUG
 	Serial.println("Triggered: protocol 2");
+#endif
 
 	unsigned long code = 0;
 	unsigned long delay = RCSwitch::timings[interrupt_i][0] / 10;
@@ -761,7 +792,9 @@ bool RCSwitch::receiveProtocol2(int interrupt_i, unsigned int changeCount){
 		//	Serial.printf("%d ", RCSwitch::timings[interrupt_i][j]);
 		//}
 		//Serial.println("");
+#if RC_DEBUG
 		Serial.printf("code = %d\n", code);
+#endif
 		return true;
 	}
 }
@@ -770,7 +803,9 @@ bool RCSwitch::receiveProtocol2(int interrupt_i, unsigned int changeCount){
  *
  */
 bool RCSwitch::receiveProtocol3(int interrupt_i, unsigned int changeCount){
+#if RC_DEBUG
 	Serial.println("Triggered: protocol 3");
+#endif
 
 	unsigned long code = 0;
 	unsigned long delay = RCSwitch::timings[interrupt_i][0] / PROTOCOL3_SYNC_FACTOR;
@@ -811,14 +846,16 @@ bool RCSwitch::receiveProtocol3(int interrupt_i, unsigned int changeCount){
 		//	Serial.printf("%d ", RCSwitch::timings[interrupt_i][j]);
 		//}
 		//Serial.println("");
+#if RC_DEBUG
 		Serial.printf("code = %d\n", code);
+#endif
 		return true;
 	}
 }
 
 void RCSwitch::handleInterrupt() {
 	bool doSwap = false;
-	unsigned long time = micros() * 0.983; // Spark Core micros() calibration
+	unsigned long time = micros();
 
 	for (int i = 0; i < RCSWITCH_MAX_RX_PINS; ++i) {
 		bool isCurrentHigh = (digitalRead(RCSwitch::receiverInterrupts[i].interrupt) == HIGH);

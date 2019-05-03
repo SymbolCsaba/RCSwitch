@@ -3,6 +3,24 @@
 #ifndef _RCSwitch_h
 #define _RCSwitch_h
 
+// #define RC_DEBUG
+
+#if defined(ARDUINO) && ARDUINO >= 100
+    #include "Arduino.h"
+#elif defined(ENERGIA) // LaunchPad, FraunchPad and StellarPad specific
+    #include "Energia.h"
+#elif defined(RPI) // Raspberry Pi
+    #define RaspberryPi
+
+    // Include libraries for RPi:
+    #include <string.h> /* memcpy */
+    #include <stdlib.h> /* abs */
+    #include <wiringPi.h>
+#elif defined(SPARK)
+    #include "application.h"
+#else
+    #include "WProgram.h"
+#endif
 
 // https://community.sparkdevices.com/t/fix-for-include-arduino-h/953
 
@@ -11,8 +29,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#include "spark_wiring.h"
-#include "spark_wiring_interrupts.h"
+//#include "spark_wiring.h"
+//#include "spark_wiring_interrupts.h"
 
 // to make it compile (by Frido)
 
@@ -25,7 +43,7 @@
 
 // Maximum number of supported RX pins.
 // Setting this to 0 will #define RCSwitchDisableReceiving
-#define RCSWITCH_MAX_RX_PINS 1
+#define RCSWITCH_MAX_RX_PINS 3
 
 // Number of maximum High/Low changes per packet.
 // We can handle up to (unsigned long) => 32 bit * 2 H/L changes per bit + 2 for sync
