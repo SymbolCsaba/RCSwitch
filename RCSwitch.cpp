@@ -697,7 +697,7 @@ unsigned int* RCSwitch::getReceivedRawdata(int interrupt) {
 /**
  *
  */
-bool RCSwitch::receiveProtocol1(int interrupt_i, unsigned int changeCount){
+bool RECEIVE_ATTR RCSwitch::receiveProtocol1(int interrupt_i, unsigned int changeCount){
 #if RC_DEBUG
 	Serial.println("Triggered: protocol 1");
 #endif
@@ -748,7 +748,7 @@ bool RCSwitch::receiveProtocol1(int interrupt_i, unsigned int changeCount){
 	}
 }
 
-bool RCSwitch::receiveProtocol2(int interrupt_i, unsigned int changeCount){
+bool RECEIVE_ATTR RCSwitch::receiveProtocol2(int interrupt_i, unsigned int changeCount){
 #if RC_DEBUG
 	Serial.println("Triggered: protocol 2");
 #endif
@@ -802,7 +802,7 @@ bool RCSwitch::receiveProtocol2(int interrupt_i, unsigned int changeCount){
 /** Protocol 3 is used by BL35P02.
  *
  */
-bool RCSwitch::receiveProtocol3(int interrupt_i, unsigned int changeCount){
+bool RECEIVE_ATTR RCSwitch::receiveProtocol3(int interrupt_i, unsigned int changeCount){
 #if RC_DEBUG
 	Serial.println("Triggered: protocol 3");
 #endif
@@ -853,7 +853,7 @@ bool RCSwitch::receiveProtocol3(int interrupt_i, unsigned int changeCount){
 	}
 }
 
-void RCSwitch::handleInterrupt() {
+void RECEIVE_ATTR RCSwitch::handleInterrupt() {
 	bool doSwap = false;
 	unsigned long time = micros();
 
