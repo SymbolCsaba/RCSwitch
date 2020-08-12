@@ -1,6 +1,10 @@
 /* ========================= .cpp ================================= */
 
 /*
+  setReveiceRepeat() function: modified By Csaba Balázs 2020.08.12
+  
+  ==================
+
   RCSwitch - Arduino libary for remote control outlet switches
   Copyright (c) 2011 Suat Özgür.  All right reserved.
 
@@ -30,7 +34,6 @@
 */
 
 #include "RCSwitch.h"
-//#include "spark_wiring_usbserial.h"
 
 #if defined(ESP8266) || defined(ESP32)
     // interrupt handler and related code must be in RAM on ESP8266,
@@ -44,6 +47,7 @@
 RCSwitch::InterruptData RCSwitch::receiverInterrupts[RCSWITCH_MAX_RX_PINS];
 int RCSwitch::nInterruptSourcePin = -1;
 int RCSwitch::nReceiveTolerance = 60;
+int RCSwitch::nReceiveRepeat = 2;
 #endif
 unsigned int RCSwitch::timings[RCSWITCH_MAX_RX_PINS][RCSWITCH_MAX_CHANGES];
 
@@ -58,6 +62,7 @@ RCSwitch::RCSwitch() {
 	}
 	this->nInterruptSourcePin = -1;
 	this->setReceiveTolerance(60);
+	this->setReveiceRepeat(2);
 	#endif
 }
 
@@ -100,6 +105,8 @@ void RCSwitch::setRepeatTransmit(int nRepeatTransmit)
 #if not defined( RCSwitchDisableReceiving )
 void RCSwitch::setReceiveTolerance(int nPercent)
 	{ this->nReceiveTolerance = nPercent; }
+void RCSwitch::setReveiceRepeat(int nRepeatReceive)
+	{ if (nRepeatReceive < 0) nRepeatReceive = 0; this->nReceiveRepeat = nRepeatReceive; }
 #endif
 
 
@@ -872,7 +879,7 @@ void RECEIVE_ATTR RCSwitch::handleInterrupt() {
 			RCSwitch::receiverInterrupts[i].repeatCount++;
 			RCSwitch::receiverInterrupts[i].changeCount--;
 
-			if (RCSwitch::receiverInterrupts[i].repeatCount == 2) {
+			if (RCSwitch::receiverInterrupts[i].repeatCount >= RCSwitch::nReceiveRepeat) {
 				int sendInterruptIndex = getInterruptIndex(RCSwitch::receiverInterrupts[i].interrupt);
 				int sendChangeCount = RCSwitch::receiverInterrupts[i].changeCount;
 				if (receiveProtocol1(sendInterruptIndex, sendChangeCount) == false) {
