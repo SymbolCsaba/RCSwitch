@@ -14,7 +14,7 @@ void setup() {
   mySwitch.enableReceive(digitalPinToInterrupt(PIN));
 
   // No need to repeat code, report as received data on first press
-  mySwitch.setReveiceRepeat(0);
+  mySwitch.setReceiveRepeat(0);
   
   Serial.println("Started");
 }

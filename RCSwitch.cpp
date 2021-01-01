@@ -1,7 +1,7 @@
 /* ========================= .cpp ================================= */
 
 /*
-  setReveiceRepeat() function: modified By Csaba Balázs 2020.08.12
+  setReceiveRepeat() function: modified By Csaba Balázs 2020.08.12
   
   ==================
 
@@ -62,7 +62,7 @@ RCSwitch::RCSwitch() {
 	}
 	this->nInterruptSourcePin = -1;
 	this->setReceiveTolerance(60);
-	this->setReveiceRepeat(2);
+	this->setReceiveRepeat(2);
 	#endif
 }
 
@@ -105,7 +105,7 @@ void RCSwitch::setRepeatTransmit(int nRepeatTransmit)
 #if not defined( RCSwitchDisableReceiving )
 void RCSwitch::setReceiveTolerance(int nPercent)
 	{ this->nReceiveTolerance = nPercent; }
-void RCSwitch::setReveiceRepeat(int nRepeatReceive)
+void RCSwitch::setReceiveRepeat(int nRepeatReceive)
 	{ if (nRepeatReceive < 0) nRepeatReceive = 0; this->nReceiveRepeat = nRepeatReceive; }
 #endif
 

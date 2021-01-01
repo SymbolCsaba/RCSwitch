@@ -97,7 +97,7 @@ public:
 	void setRepeatTransmit(int nRepeatTransmit);
 	#if not defined( RCSwitchDisableReceiving )
 	void setReceiveTolerance(int nPercent);
-	void setReveiceRepeat(int nRepeatReceive);
+	void setReceiveRepeat(int nRepeatReceive);
 	#endif
 	void setProtocol(int nProtocol);
 	void setProtocol(int nProtocol, int nPulseLength);

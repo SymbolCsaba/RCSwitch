@@ -14,7 +14,7 @@ void setup() {
   mySwitch.enableReceive(digitalPinToInterrupt(PIN));
 
   // Need receiving 20 equal code, report only after approx. 2500ms (but sure to read read value)
-  mySwitch.setReveiceRepeat(20);
+  mySwitch.setReceiveRepeat(20);
   
   Serial.println("Started");
 }
